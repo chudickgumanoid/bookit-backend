@@ -17,6 +17,8 @@ model User {
   role      UserRole   @default(USER)
   status    UserStatus @default(ACTIVE)
   isVerify  Boolean    @default(false) @map("is_verify")
+  dateBirth DateTime?
+  city      City?       @relation(fields: [cityId], references: [id])
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -25,6 +27,7 @@ model User {
   bookings      Booking[]
   tickets       Ticket[]
   AuditLog      AuditLog[]
+  cityId        String?
 }
 
 model Event {
@@ -101,6 +104,26 @@ model AuditLog {
   @@index([userId])
   @@index([action])
   @@index([timestamp])
+}
+
+model City {
+  id         String  @id @default(uuid())
+  name       String
+  region     String?
+  postalCode String?
+
+  users User[]
+}
+
+model Admin {
+  id       String   @id @default(uuid())
+  nickname String   @unique
+  email    String   @unique
+  password String
+  role     UserRole @default(ADMIN)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 }
 
 enum UserRole {

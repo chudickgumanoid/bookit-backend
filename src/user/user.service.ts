@@ -56,7 +56,14 @@ export class UserService {
   async update(user: User, dto: UserUpdateDto) {
     return await this.prisma.user.update({
       where: { id: user.id },
-      data: dto,
+      data: {
+        firstName: dto.first_name,
+        lastName: dto.last_name,
+        email: dto.email,
+        avatarUrl: dto.avatarUrl,
+        dateBirth: dto.dateBirth,
+        cityId: dto.city,
+      },
     });
   }
 

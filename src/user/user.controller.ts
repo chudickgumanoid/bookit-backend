@@ -1,6 +1,16 @@
-import { Body, Controller, Get, Patch, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Put,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
+import { diskStorage } from 'multer';
 import { IsAuth } from 'src/decorator/auth.decorator';
 import { CurrentUser } from 'src/decorator/current-user.decorator';
 import { PasswordDto } from './dto/password.dto';
@@ -35,9 +45,27 @@ export class UserController {
     return this.userService.updatePassword(user, dto);
   }
 
-  @Patch('update')
   @IsAuth()
-  async update(@CurrentUser() user: User, @Body() dto: UserUpdateDto) {
+  @Patch('update')
+  @UseInterceptors(
+    FileInterceptor('avatarUrl', {
+      storage: diskStorage({
+        destination: './media',
+        filename: (req, file, cb) => {
+          const filename = `${Date.now()}-${file.originalname}`;
+          cb(null, filename);
+        },
+      }),
+    }),
+  )
+  async update(
+    @CurrentUser() user: User,
+    @Body() dto: UserUpdateDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    if (file) {
+      dto.avatarUrl = `http://localhost:3000/media/${file.filename}`;
+    }
     return this.userService.update(user, dto);
   }
 }
