@@ -60,7 +60,7 @@ export class UserService {
         firstName: dto.first_name,
         lastName: dto.last_name,
         email: dto.email,
-        avatarUrl: dto.avatarUrl,
+        avatarUrl: dto.avatar,
         dateBirth: dto.dateBirth,
         cityId: dto.city,
       },

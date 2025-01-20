@@ -22,7 +22,7 @@ export class UserUpdateDto {
     description: 'Avatar URL',
     example: 'http://localhost:3000/media/12345-avatar.jpg',
   })
-  avatarUrl?: string;
+  avatar?: string;
 
   @IsString()
   @IsDate()

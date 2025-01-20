@@ -48,7 +48,7 @@ export class UserController {
   @IsAuth()
   @Patch('update')
   @UseInterceptors(
-    FileInterceptor('avatarUrl', {
+    FileInterceptor('avatar', {
       storage: diskStorage({
         destination: './media',
         filename: (req, file, cb) => {
@@ -64,7 +64,7 @@ export class UserController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     if (file) {
-      dto.avatarUrl = `http://localhost:3000/media/${file.filename}`;
+      dto.avatar = `http://localhost:3000/media/${file.filename}`;
     }
     return this.userService.update(user, dto);
   }
