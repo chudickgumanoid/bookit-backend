@@ -35,7 +35,24 @@ export class AuthService {
   }
 
   async register(dto: AuthRegisterDto) {
-    await this.userCommon.isExistsUser(dto.email);
+    const existingUser = await this.userCommon.isExistsUser(dto.email);
+    console.log(existingUser, 'existingUser');
+
+    if (existingUser) {
+      if (existingUser.status === UserStatus.ACTIVE) {
+        throw new BadRequestException('Email already exists');
+      }
+
+      if (existingUser.status === UserStatus.DELETED) {
+        await this.userCommon.reRegister(existingUser.id, dto);
+        const tokens = await this.issueTokens(existingUser.id);
+
+        return {
+          user: returnUserShortFields(existingUser),
+          ...tokens,
+        };
+      }
+    }
 
     const user = await this.createUser(dto, dto.password);
 
@@ -45,6 +62,23 @@ export class AuthService {
       user: returnUserShortFields(user),
       ...tokens,
     };
+  }
+
+  private async createUser(dto: AuthRegisterDto, password: string) {
+    const pwd = await hash(password);
+    console.log('отработало или нет?');
+
+    return await this.prisma.user.create({
+      data: {
+        firstName: dto.first_name,
+        lastName: dto.last_name,
+        email: dto.email,
+        role: UserRole.USER,
+        status: UserStatus.ACTIVE,
+        password: pwd,
+        isVerify: false,
+      },
+    });
   }
 
   async getNewToken(refreshToken: string) {
@@ -64,20 +98,6 @@ export class AuthService {
     } catch (error) {
       throw new BadRequestException('Invalid signature');
     }
-  }
-
-  private async createUser(dto: AuthRegisterDto, password: string) {
-    return await this.prisma.user.create({
-      data: {
-        firstName: dto.first_name,
-        lastName: dto.last_name,
-        email: dto.email,
-        role: UserRole.USER,
-        status: UserStatus.ACTIVE,
-        password: await hash(password),
-        isVerify: false,
-      },
-    });
   }
 
   private async issueTokens(user_id: string) {

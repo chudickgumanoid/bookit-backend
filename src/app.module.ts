@@ -8,6 +8,8 @@ import { UserController } from './user/user.controller';
 import { UserModule } from './user/user.module';
 import { UserService } from './user/user.service';
 import { SPLogger } from './utils/logger.service';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -15,6 +17,10 @@ import { SPLogger } from './utils/logger.service';
     PrismaModule,
     AuthModule,
     UserModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'media'),
+      serveRoot: '/media',
+    }),
   ],
   controllers: [AppController, UserController],
   providers: [

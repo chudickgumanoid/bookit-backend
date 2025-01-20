@@ -18,7 +18,7 @@ model User {
   status    UserStatus @default(ACTIVE)
   isVerify  Boolean    @default(false) @map("is_verify")
   dateBirth DateTime?
-  city      City?       @relation(fields: [cityId], references: [id])
+  city      City?      @relation(fields: [cityId], references: [id])
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -68,10 +68,11 @@ model Ticket {
   seatNumber String
   price      Float
   status     TicketStatus @default(AVAILABLE)
+
+  bookedBy   User?    @relation(fields: [bookedById], references: [id])
   bookedById String?
-  bookedBy   User?        @relation(fields: [bookedById], references: [id])
-  bookingId  String?      @unique
-  booking    Booking?     @relation("BookingTickets", fields: [bookingId], references: [id])
+  booking    Booking? @relation("BookingTickets", fields: [bookingId], references: [id])
+  bookingId  String?  @unique
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

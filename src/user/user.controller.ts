@@ -5,23 +5,24 @@ import {
   Patch,
   Put,
   UploadedFile,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
-import { diskStorage } from 'multer';
 import { IsAuth } from 'src/decorator/auth.decorator';
 import { CurrentUser } from 'src/decorator/current-user.decorator';
+import { FileUpload } from 'src/decorator/file-upload.decorator';
 import { PasswordDto } from './dto/password.dto';
 import { UserUpdateDto } from './dto/user.dto';
 import { UserService } from './user.service';
+import { ConfigService } from '@nestjs/config';
 
 @ApiTags('user')
+@ApiBearerAuth('access-token')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @IsAuth()
   @Get('all')
   async findAll() {
     return await this.userService.findAll();
@@ -47,25 +48,34 @@ export class UserController {
 
   @IsAuth()
   @Patch('update')
-  @UseInterceptors(
-    FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: './media',
-        filename: (req, file, cb) => {
-          const filename = `${Date.now()}-${file.originalname}`;
-          cb(null, filename);
-        },
-      }),
-    }),
-  )
+  @FileUpload({ key: 'avatar', path: './media/avatars' })
   async update(
     @CurrentUser() user: User,
     @Body() dto: UserUpdateDto,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    const cfg = new ConfigService();
     if (file) {
-      dto.avatar = `http://localhost:3000/media/${file.filename}`;
+      dto.avatar = `http://localhost:${cfg.get('BK_DEV_PORT')}/media/avatars/${file.filename}`;
     }
     return this.userService.update(user, dto);
+  }
+
+  @IsAuth()
+  @Get('my-tickets')
+  async getMyTickets(@CurrentUser() user: User) {
+    return await this.userService.getMyTickets(user.id);
+  }
+
+  @IsAuth()
+  @Get('history')
+  async history(@CurrentUser() user: User) {
+    return await this.userService.history(user.id);
+  }
+
+  @IsAuth()
+  @Patch('delete-account')
+  async deleteProfile(@CurrentUser() user: User) {
+    return await this.userService.deleteProfile(user.id);
   }
 }

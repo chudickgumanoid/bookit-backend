@@ -5,6 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import type { User } from '@prisma/client';
+import { TicketStatus, UserStatus } from '@prisma/client';
 import { hash, verify } from 'argon2';
 import { PrismaService } from 'src/prisma.service';
 import { PasswordDto } from './dto/password.dto';
@@ -70,6 +71,36 @@ export class UserService {
   async getProfileById(id: string) {
     return await this.prisma.user.findUnique({
       where: { id: id },
+    });
+  }
+
+  async getMyTickets(user_id: string) {
+    return await this.prisma.ticket.findMany({
+      where: {
+        bookedById: user_id,
+        status: TicketStatus.AVAILABLE,
+      },
+    });
+  }
+
+  async history(user_id: string) {
+    return await this.prisma.ticket.findMany({
+      where: {
+        bookedById: user_id,
+      },
+    });
+  }
+
+  async deleteProfile(user_id: string) {
+    console.log(user_id, 'user_id');
+
+    return await this.prisma.user.update({
+      where: {
+        id: user_id,
+      },
+      data: {
+        status: UserStatus.DELETED,
+      },
     });
   }
 }
