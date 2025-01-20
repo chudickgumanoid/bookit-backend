@@ -1,0 +1,25 @@
+openapi: 3.0.0
+info:
+  title: Bookit API
+  version: 1.0.0
+  description: API для бронирования билетов
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []  # Это означает, что все запросы будут требовать Bearer Token
+
+paths:
+  /example:
+    get:
+      summary: Пример защищенного ресурса
+      security:
+        - BearerAuth: []  # Требуется Bearer Token для этого запроса
+      responses:
+        '200':
+          description: Успешный ответ

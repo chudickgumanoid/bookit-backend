@@ -1,0 +1,153 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("BK_DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(uuid())
+  firstName String?    @map("first_name")
+  lastName  String?    @map("last_name")
+  avatarUrl String?    @map("avatar_url")
+  email     String     @unique
+  password  String
+  role      UserRole   @default(USER)
+  status    UserStatus @default(ACTIVE)
+  isVerify  Boolean    @default(false) @map("is_verify")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  eventsCreated Event[]    @relation("EventCreators")
+  bookings      Booking[]
+  tickets       Ticket[]
+  AuditLog      AuditLog[]
+}
+
+model Event {
+  id             String         @id @default(uuid())
+  name           String
+  description    String
+  date           DateTime
+  venueId        String
+  venue          Venue          @relation(fields: [venueId], references: [id])
+  status         EventStatus    @default(ACTIVE)
+  ageRestriction AgeRestriction @default(ALL_AGES)
+  eventType      EventType?
+  createdById    String
+  createdBy      User           @relation("EventCreators", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tickets  Ticket[]
+  bookings Booking[]
+}
+
+model Venue {
+  id         String  @id @default(uuid())
+  name       String
+  location   String
+  seatMapUrl String?
+  events     Event[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Ticket {
+  id         String       @id @default(uuid())
+  eventId    String
+  event      Event        @relation(fields: [eventId], references: [id])
+  seatNumber String
+  price      Float
+  status     TicketStatus @default(AVAILABLE)
+  bookedById String?
+  bookedBy   User?        @relation(fields: [bookedById], references: [id])
+  bookingId  String?      @unique
+  booking    Booking?     @relation("BookingTickets", fields: [bookingId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([eventId])
+  @@index([price])
+}
+
+model Booking {
+  id      String   @id @default(uuid())
+  userId  String
+  user    User     @relation(fields: [userId], references: [id])
+  eventId String
+  event   Event    @relation(fields: [eventId], references: [id])
+  tickets Ticket[] @relation("BookingTickets")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model AuditLog {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  action      AuditAction
+  description String
+  timestamp   DateTime    @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  DELETED
+  BLOCKED
+}
+
+enum EventStatus {
+  ACTIVE
+  CANCELLED
+  COMPLETED
+}
+
+enum EventType {
+  MOVIE
+  THEATER
+  MUSICAL
+  CONCERT
+  EXHIBITION
+  WORKSHOP
+  OTHER
+}
+
+enum TicketStatus {
+  AVAILABLE
+  RESERVED
+  PURCHASED
+  CANCELLED
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+}
+
+enum AgeRestriction {
+  ALL_AGES
+  SIXTEEN_PLUS
+  EIGHTEEN_PLUS
+  TWENTY_ONE_PLUS
+}
