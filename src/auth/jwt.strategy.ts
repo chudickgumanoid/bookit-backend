@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
-import { User } from '@prisma/client';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from 'src/prisma.service';
 
@@ -18,9 +17,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate({ id }: Pick<User, 'id'>) {
-    return await this.prisma.user.findUnique({
-      where: { id: String(id) },
-    });
+  async validate(payload: { id: string; role: 'USER' | 'ADMIN' }) {
+    const { id, role } = payload;
+
+    if (role === 'USER') {
+      return await this.prisma.user.findUnique({
+        where: { id: id },
+      });
+    } else if (role === 'ADMIN') {
+      return await this.prisma.admin.findUnique({
+        where: { id: id },
+      });
+    } else throw new Error('Invalid role');
   }
 }

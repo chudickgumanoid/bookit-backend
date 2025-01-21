@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const cfg = new ConfigService();
@@ -9,6 +10,13 @@ async function bootstrap() {
   app.enableCors();
   app.setGlobalPrefix('api/v1');
   app.enableShutdownHooks();
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Bookit API')

@@ -18,16 +18,17 @@ model User {
   status    UserStatus @default(ACTIVE)
   isVerify  Boolean    @default(false) @map("is_verify")
   dateBirth DateTime?
-  city      City?      @relation(fields: [cityId], references: [id])
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
 
   eventsCreated Event[]    @relation("EventCreators")
   bookings      Booking[]
   tickets       Ticket[]
   AuditLog      AuditLog[]
-  cityId        String?
+
+  city   City?   @relation(fields: [cityId], references: [id])
+  cityId String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 }
 
 model Event {
@@ -43,11 +44,11 @@ model Event {
   createdById    String
   createdBy      User           @relation("EventCreators", fields: [createdById], references: [id])
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
   tickets  Ticket[]
   bookings Booking[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 }
 
 model Venue {
@@ -108,10 +109,9 @@ model AuditLog {
 }
 
 model City {
-  id         String  @id @default(uuid())
-  name       String
-  region     String?
-  postalCode String?
+  id    String @id @default(uuid())
+  title String
+  name  String
 
   users User[]
 }

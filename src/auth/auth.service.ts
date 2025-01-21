@@ -1,18 +1,17 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User, UserRole, UserStatus } from '@prisma/client';
-import { hash, verify } from 'argon2';
+import { UserStatus } from '@prisma/client';
 import { UserCommonService } from 'src/user/user-common.service';
 import { UserService } from 'src/user/user.service';
 import { PrismaService } from './../prisma.service';
 import { AuthLoginDto, AuthRegisterDto } from './dto/auth.dto';
 import { returnUserShortFields } from './return-user-object';
+import { TokenService } from './token.service';
 
 @Injectable()
 export class AuthService {
@@ -22,11 +21,12 @@ export class AuthService {
     private user: UserService,
     private userCommon: UserCommonService,
     private cfg: ConfigService,
+    private token: TokenService,
   ) {}
 
   async login(dto: AuthLoginDto) {
-    const user = await this.validateUser(dto);
-    const tokens = await this.issueTokens(user.id);
+    const user = await this.userCommon.validateUser(dto);
+    const tokens = await this.token.issueTokens(user);
 
     return {
       user: returnUserShortFields(user),
@@ -47,7 +47,7 @@ export class AuthService {
           existingUser.id,
           dto,
         );
-        const tokens = await this.issueTokens(existingUser.id);
+        const tokens = await this.token.issueTokens(existingUser);
 
         return {
           user: returnUserShortFields(updatetUser),
@@ -55,31 +55,21 @@ export class AuthService {
         };
       }
     } else {
-      const user = await this.createUser(dto, dto.password);
+      const transaction = await this.prisma.$transaction(async () => {
+        const user = await this.userCommon.createUser(dto, dto.password);
 
-      const tokens = await this.issueTokens(user.id);
+        const tokens = await this.token.issueTokens(user);
 
-      return {
-        user: returnUserShortFields(user),
-        ...tokens,
-      };
+        if (!tokens) throw new Error('Failed to issue tokens');
+
+        return {
+          user: returnUserShortFields(user),
+          ...tokens,
+        };
+      });
+
+      return transaction;
     }
-  }
-
-  private async createUser(dto: AuthRegisterDto, password: string) {
-    const pwd = await hash(password);
-
-    return await this.prisma.user.create({
-      data: {
-        firstName: dto.first_name,
-        lastName: dto.last_name,
-        email: dto.email,
-        role: UserRole.USER,
-        status: UserStatus.ACTIVE,
-        password: pwd,
-        isVerify: false,
-      },
-    });
   }
 
   async getNewToken(refreshToken: string) {
@@ -90,7 +80,7 @@ export class AuthService {
       }
 
       const user = await this.user.getUserById(res.id);
-      const tokens = await this.issueTokens(user.id);
+      const tokens = await this.token.issueTokens(user);
 
       return {
         user: returnUserShortFields(user),
@@ -99,35 +89,5 @@ export class AuthService {
     } catch (error) {
       throw new BadRequestException('Invalid signature');
     }
-  }
-
-  private async issueTokens(user_id: string) {
-    const data = { id: user_id };
-    const accessToken = this.jwt.sign(data, {
-      expiresIn: this.cfg.get('BK_ACCESS_TOKEN_EXPIRES'),
-    });
-    const refreshToken = this.jwt.sign(data, {
-      expiresIn: this.cfg.get('BK_REFRESH_TOKEN_EXPIRES'),
-    });
-
-    return { accessToken, refreshToken };
-  }
-
-  private async validateUser(dto: AuthLoginDto) {
-    let user: User | null = null;
-
-    user = await this.prisma.user.findFirst({
-      where: {
-        email: dto.email,
-      },
-    });
-
-    if (!user) throw new NotFoundException('User not found');
-
-    const isValid = await verify(user.password, dto.password);
-
-    if (!isValid) throw new BadRequestException('Invalid password');
-
-    return user;
   }
 }

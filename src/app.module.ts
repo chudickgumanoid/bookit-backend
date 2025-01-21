@@ -10,6 +10,8 @@ import { UserService } from './user/user.service';
 import { SPLogger } from './utils/logger.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { CityModule } from './city/city.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { join } from 'path';
       rootPath: join(__dirname, '..', 'media'),
       serveRoot: '/media',
     }),
+    CityModule,
+    AdminModule,
   ],
   controllers: [AppController, UserController],
   providers: [

@@ -4,25 +4,25 @@ import { IsEmailFormat } from 'src/decorator/email.decorator';
 import { messageMinText } from 'src/utils/lengthMessage';
 
 export class AuthRegisterDto {
-  @ApiProperty({ description: 'User email', example: 'john@example.com' })
   @IsString()
   @IsEmailFormat({ message: 'Invalid email format' })
+  @ApiProperty({ description: 'User email', example: 'john@example.com' })
   email: string;
 
-  @ApiProperty({ description: 'Last name', example: 'Doe' })
   @IsString()
+  @ApiProperty({ description: 'Last name', example: 'Doe' })
   last_name: string;
 
-  @ApiProperty({ description: 'First name', example: 'John' })
   @IsString()
+  @ApiProperty({ description: 'First name', example: 'John' })
   first_name: string;
 
+  @IsString()
+  @MinLength(4, messageMinText(4))
   @ApiProperty({
     description: 'Password for the account',
     example: '1234',
   })
-  @IsString()
-  @MinLength(4, messageMinText(4))
   password: string;
 }
 

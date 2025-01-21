@@ -18,5 +18,7 @@ export const returnUserFields = (user: User) => {
     role: user.role,
     status: user.status,
     isVerify: user.isVerify,
+    dateBirth: user.dateBirth,
+    city: user.cityId,
   };
 };

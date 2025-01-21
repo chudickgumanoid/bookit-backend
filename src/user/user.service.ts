@@ -10,7 +10,6 @@ import { hash, verify } from 'argon2';
 import { PrismaService } from 'src/prisma.service';
 import { PasswordDto } from './dto/password.dto';
 import { UserUpdateDto } from './dto/user.dto';
-import { returnUserFields } from 'src/auth/return-user-object';
 
 @Injectable()
 export class UserService {
@@ -51,7 +50,7 @@ export class UserService {
     });
 
     if (update) {
-      throw new HttpException('Succes change password', HttpStatus.OK);
+      throw new HttpException('Success change password', HttpStatus.OK);
     }
   }
 

@@ -6,6 +6,7 @@ import {
   Put,
   UploadedFile,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { User } from '@prisma/client';
 import { IsAuth } from 'src/decorator/auth.decorator';
@@ -14,7 +15,6 @@ import { FileUpload } from 'src/decorator/file-upload.decorator';
 import { PasswordDto } from './dto/password.dto';
 import { UserUpdateDto } from './dto/user.dto';
 import { UserService } from './user.service';
-import { ConfigService } from '@nestjs/config';
 
 @ApiTags('user')
 @ApiBearerAuth('access-token')

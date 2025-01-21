@@ -23,17 +23,26 @@ export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const userId = request.user?.id;
+    const role = request.user?.role;
 
     if (!userId) {
       throw new ForbiddenException('User not found');
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    if (role === 'USER') {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
 
-    if (!user || user.status !== UserStatus.ACTIVE) {
-      throw new ForbiddenException('User is not active');
+      if (!user || user.status !== UserStatus.ACTIVE) {
+        throw new ForbiddenException('User is not active');
+      }
+    } else if (role === 'ADMIN') {
+      await this.prisma.admin.findUnique({
+        where: { id: userId },
+      });
+    } else {
+      throw new ForbiddenException('Invalid role');
     }
 
     return true;

@@ -1,14 +1,5 @@
-import {
-  Body,
-  Controller,
-  HttpCode,
-  Post,
-  UseGuards,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ActiveGuard } from 'src/utils/guards/active-user.guard';
 import { AuthService } from './auth.service';
 import { AuthLoginDto, AuthRegisterDto } from './dto/auth.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
@@ -20,18 +11,16 @@ export class AuthController {
 
   @HttpCode(200)
   @Post('login')
-  @UsePipes(new ValidationPipe())
   @ApiOperation({ summary: 'Login to the application' })
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  @UseGuards(ActiveGuard)
+  // @UseGuards(ActiveGuard)
   async login(@Body() dto: AuthLoginDto) {
     return await this.authService.login(dto);
   }
 
   @HttpCode(200)
   @Post('register')
-  @UsePipes(new ValidationPipe())
   @ApiOperation({ summary: 'Register a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 400, description: 'Invalid request' })
@@ -41,7 +30,6 @@ export class AuthController {
 
   @HttpCode(200)
   @Post('refresh-token')
-  @UsePipes(new ValidationPipe())
   @ApiOperation({ summary: 'Reset user password' })
   @ApiResponse({ status: 400, description: 'Invalid request' })
   async getNewToken(@Body() dto: RefreshTokenDto) {
