@@ -6,6 +6,8 @@ import { AdminAuthService } from './admin-auth.service';
 import { AdminService } from './admin.service';
 import { LoginAdminDto, RegisterAdminDto } from './dto/admin.dto';
 import { IsAuth } from 'src/decorator/auth.decorator';
+import { CreateVenueDto } from './dto/venue.dto';
+import { CreateTicketTypeDto } from './dto/ticket.dto';
 
 @ApiTags('admin')
 @ApiBearerAuth('access-token')
@@ -36,5 +38,29 @@ export class AdminController {
   @Get('profile')
   async profile(@CurrentUser() admin: Admin) {
     return await this.adminService.profile(admin.id);
+  }
+
+  @IsAuth()
+  @Get('venue/:city_id')
+  async getVenueByCityId(city_id: string) {
+    return await this.adminService.getVenueByCityId(city_id);
+  }
+
+  @IsAuth()
+  @Post('venue')
+  async createVenue(@Body() dto: CreateVenueDto) {
+    return await this.adminService.createVenue(dto);
+  }
+
+  @IsAuth()
+  @Get('ticket/type')
+  async getTicketType() {
+    return await this.adminService.getTicketType();
+  }
+
+  @IsAuth()
+  @Post('ticket/type')
+  async createTicket(@Body() dto: CreateTicketTypeDto) {
+    return await this.adminService.createTicketType(dto);
   }
 }

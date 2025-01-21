@@ -43,20 +43,32 @@ model Event {
   eventType      EventType?
   createdById    String
   createdBy      User           @relation("EventCreators", fields: [createdById], references: [id])
+  tickets        Ticket[]
 
-  tickets  Ticket[]
-  bookings Booking[]
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  Booking   Booking[]
 }
 
 model Venue {
   id         String  @id @default(uuid())
   name       String
-  location   String
+  locationId String
+  location   City    @relation(fields: [locationId], references: [id])
   seatMapUrl String?
   events     Event[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model TicketType {
+  id          String  @id @default(uuid())
+  name        String
+  price       Float
+  description String?
+
+  tickets Ticket[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -69,6 +81,9 @@ model Ticket {
   seatNumber String
   price      Float
   status     TicketStatus @default(AVAILABLE)
+
+  ticketTypeId String
+  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
 
   bookedBy   User?    @relation(fields: [bookedById], references: [id])
   bookedById String?
@@ -114,6 +129,7 @@ model City {
   name  String
 
   users User[]
+  venue Venue[]
 }
 
 model Admin {
