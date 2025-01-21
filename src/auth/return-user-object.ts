@@ -15,7 +15,6 @@ export const returnUserFields = (user: User) => {
     last_name: user.lastName,
     avatar_url: user.avatarUrl,
     email: user.email,
-    password: user.password,
     role: user.role,
     status: user.status,
     isVerify: user.isVerify,

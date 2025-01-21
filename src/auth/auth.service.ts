@@ -36,7 +36,6 @@ export class AuthService {
 
   async register(dto: AuthRegisterDto) {
     const existingUser = await this.userCommon.isExistsUser(dto.email);
-    console.log(existingUser, 'existingUser');
 
     if (existingUser) {
       if (existingUser.status === UserStatus.ACTIVE) {
@@ -44,29 +43,31 @@ export class AuthService {
       }
 
       if (existingUser.status === UserStatus.DELETED) {
-        await this.userCommon.reRegister(existingUser.id, dto);
+        const updatetUser = await this.userCommon.reRegister(
+          existingUser.id,
+          dto,
+        );
         const tokens = await this.issueTokens(existingUser.id);
 
         return {
-          user: returnUserShortFields(existingUser),
+          user: returnUserShortFields(updatetUser),
           ...tokens,
         };
       }
+    } else {
+      const user = await this.createUser(dto, dto.password);
+
+      const tokens = await this.issueTokens(user.id);
+
+      return {
+        user: returnUserShortFields(user),
+        ...tokens,
+      };
     }
-
-    const user = await this.createUser(dto, dto.password);
-
-    const tokens = await this.issueTokens(user.id);
-
-    return {
-      user: returnUserShortFields(user),
-      ...tokens,
-    };
   }
 
   private async createUser(dto: AuthRegisterDto, password: string) {
     const pwd = await hash(password);
-    console.log('отработало или нет?');
 
     return await this.prisma.user.create({
       data: {

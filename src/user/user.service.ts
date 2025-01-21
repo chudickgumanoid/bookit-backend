@@ -10,6 +10,7 @@ import { hash, verify } from 'argon2';
 import { PrismaService } from 'src/prisma.service';
 import { PasswordDto } from './dto/password.dto';
 import { UserUpdateDto } from './dto/user.dto';
+import { returnUserFields } from 'src/auth/return-user-object';
 
 @Injectable()
 export class UserService {

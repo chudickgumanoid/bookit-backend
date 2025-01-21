@@ -7,11 +7,11 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ActiveGuard } from 'src/utils/guards/active-user.guard';
 import { AuthService } from './auth.service';
 import { AuthLoginDto, AuthRegisterDto } from './dto/auth.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { ActiveGuard } from 'src/utils/guards/active-user.guard';
 
 @ApiTags('auth')
 @Controller('auth')

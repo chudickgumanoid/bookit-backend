@@ -1,11 +1,11 @@
 import {
-  Injectable,
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  Injectable,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma.service';
 import { UserStatus } from '@prisma/client';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class ActiveGuard implements CanActivate {
@@ -19,7 +19,6 @@ export class ActiveGuard implements CanActivate {
       throw new ForbiddenException('User not found');
     }
 
-    // Проверяем статус пользователя на ACTIVE
     const isActive = await this.checkUserStatus(userId);
     if (!isActive) {
       throw new ForbiddenException('User is not active');

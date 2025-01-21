@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { UserStatus } from '@prisma/client';
+import { UserRole, UserStatus } from '@prisma/client';
+import { hash } from 'argon2';
 import { AuthRegisterDto } from 'src/auth/dto/auth.dto';
 import { PrismaService } from 'src/prisma.service';
 
@@ -16,13 +17,20 @@ export class UserCommonService {
   }
 
   async reRegister(user_id: string, dto: AuthRegisterDto) {
+    const pwd = await hash(dto.password);
+
     return await this.prisma.user.update({
       where: {
         id: user_id,
       },
       data: {
+        firstName: dto.first_name,
+        lastName: dto.last_name,
+        email: dto.email,
+        role: UserRole.USER,
         status: UserStatus.ACTIVE,
-        password: dto.password,
+        password: pwd,
+        isVerify: false,
       },
     });
   }
